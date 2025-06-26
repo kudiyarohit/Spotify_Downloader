@@ -1,0 +1,8 @@
+{% if filename and cover_url %}
+  <div class="text-center mt-5">
+    <h6 class="text-hover text-white" style="margin-left: 30px;"> <img src="{{ cover_url }}" alt="Cover" class="img-fluid rounded shadow" style="max-height: 80px;"> {{filename.replace(".mp3", "").replace(".zip", "")}} is ready to download!</h6>
+    <a href="/download/{{ filename }}" class="btn btn-green mt-3">Download Now</a>
+  </div>
+{% else %}
+  <p class="text-danger">Something went wrong.</p>
+{% endif %}
