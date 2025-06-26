@@ -96,7 +96,6 @@ def song_download(url, output_folder):
     
     else:
         if "youtube.com" in url or "youtu.be" in url:
-            ffmpeg_path = r"C:/ffmpeg/bin"
             cover_url = get_thumbnail(url)
 
             downloaded_file = {"filename": None}
@@ -110,7 +109,6 @@ def song_download(url, output_folder):
             ydl_opts = {
                 'format': 'bestaudio/best',
                 'outtmpl': outtmpl,
-                'ffmpeg_location': ffmpeg_path,
                 'postprocessors': [{
                     'key': 'FFmpegExtractAudio',
                     'preferredcodec': 'mp3',
