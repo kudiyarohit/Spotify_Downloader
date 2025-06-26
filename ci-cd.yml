@@ -12,10 +12,6 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
 
-    - name: Build Docker image
-      run: |
-        docker build -t spotify-downloader .
-
     - name: SSH into EC2 and Deploy
       uses: appleboy/ssh-action@v0.1.6
       with:

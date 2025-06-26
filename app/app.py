@@ -40,8 +40,12 @@ def home():
     if request.method == 'POST':
         link = request.form['link']
         file_path = song_fetcher.song_download(link, user_folder)
+        
+        if file_path[0] is None:
+            return render_template("index.html", error="Failed to download the file. Please check the link or try again.")
+        
         filename = os.path.basename(file_path[0])
-
+        
         utils.schedule_deletion(user_folder, delay=600)
 
         if request.headers.get("X-Requested-With") == "XMLHttpRequest":
