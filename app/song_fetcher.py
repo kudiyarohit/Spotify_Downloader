@@ -16,6 +16,8 @@ client_credentials_manager = SpotifyClientCredentials(
 )
 sp = spotipy.Spotify(client_credentials_manager=client_credentials_manager)
 
+cookies_path = "/app/cookies.txt"  # Path to YouTube cookies inside container
+
 def download_mp3(youtube_url):
     ydl_opts = {
         'format': 'bestaudio/best',
@@ -27,6 +29,7 @@ def download_mp3(youtube_url):
         }],
         'quiet': False,
         'noplaylist': True,
+        'cookiefile': cookies_path
     }
 
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
@@ -54,38 +57,37 @@ def extractId(url):
 def song_download(url, output_folder):
     os.makedirs(output_folder, exist_ok=True)
     output_template = f"{output_folder}/{{artist}} - {{title}}"
-        
+
     if "track" in url:
         track_id = extractId(url)
         track = sp.track(track_id)
         cover_url = track['album']['images'][0]['url'] if track['album']['images'] else None
 
         subprocess.run(["spotdl", "download", url, "--output", output_template])
-        
+
         files = sorted(
             glob.glob(os.path.join(output_folder, "*.mp3")),
             key=os.path.getmtime,
             reverse=True
         )
-
         download_path = files[0] if files else None
         return [download_path, cover_url]
-    
+
     elif "playlist" in url:
         playlist_id = extractId(url)
         playlist = sp.playlist(playlist_id)
         cover_url = playlist['images'][0]['url'] if playlist['images'] else None
-        name = sp.playlist(playlist_id)['name']
+        name = playlist['name']
         playlist_folder = os.path.join(output_folder, f"{name}")
-        
-        os.makedirs(playlist_folder, exist_ok=True)
 
+        os.makedirs(playlist_folder, exist_ok=True)
         output_template = f"{playlist_folder}/{{artist}} - {{title}}"
+
         subprocess.run(["spotdl", "download", url, "--output", output_template])
-        
+
         zip_path = os.path.join(output_folder, f"{name}")
         shutil.make_archive(zip_path, "zip", playlist_folder)
-        
+
         files = sorted(
             glob.glob(os.path.join(output_folder, "*.zip")),
             key=os.path.getmtime,
@@ -93,7 +95,7 @@ def song_download(url, output_folder):
         )
         download_path = files[0] if files else None
         return [download_path, cover_url]
-    
+
     else:
         if "youtube.com" in url or "youtu.be" in url:
             cover_url = get_thumbnail(url)
@@ -117,6 +119,7 @@ def song_download(url, output_folder):
                 'progress_hooks': [hook],
                 'quiet': False,
                 'noplaylist': True,
+                'cookiefile': cookies_path
             }
 
             with yt_dlp.YoutubeDL(ydl_opts) as ydl:
@@ -128,7 +131,7 @@ def song_download(url, output_folder):
                 return [download_path, cover_url]
             else:
                 return [None, cover_url]
-            
+
         else:
             spotify_link = songLink(url)
             if spotify_link == "Song not found.":
@@ -137,13 +140,14 @@ def song_download(url, output_folder):
             track_id = extractId(spotify_link)
             track = sp.track(track_id)
             cover_url = track['album']['images'][0]['url'] if track['album']['images'] else None
-            subprocess.run(["spotdl", "download", url, "--output", output_template])
-        
-        files = sorted(
-            glob.glob(os.path.join(output_folder, "*.mp3")),
-            key=os.path.getmtime,
-            reverse=True
-        )
 
-        download_path = files[0] if files else None
-        return [download_path, cover_url]
+            subprocess.run(["spotdl", "download", url, "--output", output_template])
+
+            files = sorted(
+                glob.glob(os.path.join(output_folder, "*.mp3")),
+                key=os.path.getmtime,
+                reverse=True
+            )
+
+            download_path = files[0] if files else None
+            return [download_path, cover_url]
